@@ -4,7 +4,9 @@ Handles management of SES email addresses.
 from django.core.management.base import BaseCommand, CommandError
 from django.core.validators import validate_email
 from django.core.exceptions import ValidationError
+
 from seacucumber.util import get_boto_ses_connection
+
 
 class Command(BaseCommand):
     """
@@ -13,13 +15,13 @@ class Command(BaseCommand):
     won't be available.
     """
     args = "<action> [<email address>]"
-    help = "Manages SES emails. <action> may be one of the following:\n"\
-           "  verify <email>   Sends a verification request for an address.\n"\
-           "  list             Lists all fully verified addresses.\n"\
-           "  delete <email>   Deletes an address from your SES account.\n\n"\
-           "Examples:\n"\
-           "  ./manage.py ses_address verify some@addres.com\n"\
-           "  ./manage.py ses_address list\n"\
+    help = "Manages SES emails. <action> may be one of the following:\n" \
+           "  verify <email>   Sends a verification request for an address.\n" \
+           "  list             Lists all fully verified addresses.\n" \
+           "  delete <email>   Deletes an address from your SES account.\n\n" \
+           "Examples:\n" \
+           "  ./manage.py ses_address verify some@addres.com\n" \
+           "  ./manage.py ses_address list\n" \
            "  ./manage.py ses_address delete some@address.com"
 
     # <action> must be one of the following.
@@ -73,14 +75,15 @@ class Command(BaseCommand):
         elif action == "list":
             verified_result = connection.list_verified_email_addresses()
             if len(verified_result.VerifiedEmailAddresses) > 0:
-                print("The following emails have been fully verified on your "\
+                print("The following emails have been fully verified on your "
                       "Amazon SES account:")
                 for vemail in verified_result.VerifiedEmailAddresses:
-                    print ("  %s" % vemail)
+                    print("  %s" % vemail)
             else:
                 print("Your account has no fully verified email addresses yet.")
 
-    def _get_ses_connection(self):
+    @staticmethod
+    def _get_ses_connection():
         """
         Convenience method for returning a SES connection, and handling any
         errors that may appear.
@@ -93,7 +96,8 @@ class Command(BaseCommand):
         except:
             raise Exception("Could not connect to Amazon SES service")
 
-    def _is_valid_email(self, email):
+    @staticmethod
+    def _is_valid_email(email):
         """
         Given an email address, make sure that it is well-formed.
 

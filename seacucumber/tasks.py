@@ -7,7 +7,8 @@ import logging
 
 from django.conf import settings
 from celery.task import Task
-from boto.ses.exceptions import SESAddressBlacklistedError, SESDomainEndsWithDotError, SESLocalAddressCharacterError, SESIllegalAddressError
+from boto.ses.exceptions import SESAddressBlacklistedError, SESDomainEndsWithDotError, SESLocalAddressCharacterError, \
+    SESIllegalAddressError
 
 from seacucumber.util import get_boto_ses_connection, dkim_sign
 
@@ -18,6 +19,7 @@ class SendEmailTask(Task):
     """
     Sends an email through Boto's SES API module.
     """
+
     def __init__(self):
         self.max_retries = getattr(settings, 'CUCUMBER_MAX_RETRIES', 60)
         self.default_retry_delay = getattr(settings, 'CUCUMBER_RETRY_DELAY', 60)
@@ -46,7 +48,7 @@ class SendEmailTask(Task):
                 destinations=recipients,
                 raw_message=dkim_sign(message),
             )
-        except SESAddressBlacklistedError, exc:
+        except SESAddressBlacklistedError as exc:
             # Blacklisted users are those which delivery failed for in the
             # last 24 hours. They'll eventually be automatically removed from
             # the blacklist, but for now, this address is marked as
@@ -57,7 +59,7 @@ class SendEmailTask(Task):
                 extra={'trace': True}
             )
             return False
-        except SESDomainEndsWithDotError, exc:
+        except SESDomainEndsWithDotError as exc:
             # Domains ending in a dot are simply invalid.
             logger.warning(
                 'Invalid recipient, ending in dot: %s' % recipients,
@@ -65,7 +67,7 @@ class SendEmailTask(Task):
                 extra={'trace': True}
             )
             return False
-        except SESLocalAddressCharacterError, exc:
+        except SESLocalAddressCharacterError as exc:
             # Invalid character, usually in the sender "name".
             logger.warning(
                 'Local address contains control or whitespace: %s' % recipients,
@@ -73,7 +75,7 @@ class SendEmailTask(Task):
                 extra={'trace': True}
             )
             return False
-        except SESIllegalAddressError, exc:
+        except SESIllegalAddressError as exc:
             # A clearly mal-formed address.
             logger.warning(
                 'Illegal address: %s' % recipients,
@@ -81,10 +83,9 @@ class SendEmailTask(Task):
                 extra={'trace': True}
             )
             return False
-        except Exception, exc:
+        except Exception as exc:
             # Something else happened that we haven't explicitly forbade
             # retry attempts for.
-            #noinspection PyUnresolvedReferences
             logger.error(
                 'Something went wrong; retrying: %s' % recipients,
                 exc_info=exc,

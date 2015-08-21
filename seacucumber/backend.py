@@ -7,6 +7,7 @@ your settings.py::
 
 from django.conf import settings
 from django.core.mail.backends.base import BaseEmailBackend
+
 from seacucumber.tasks import SendEmailTask
 
 
@@ -33,9 +34,9 @@ class SESBackend(BaseEmailBackend):
         for message in email_messages:
             # Hand this off to a celery task.
             SendEmailTask.apply_async(args=[
-                    message.from_email,
-                    message.recipients(),
-                    message.message().as_string().decode('utf8'),], 
+                message.from_email,
+                message.recipients(),
+                message.message().as_string(), ],
                 queue=queue,
             )
             num_sent += 1

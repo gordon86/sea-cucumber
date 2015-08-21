@@ -8,6 +8,7 @@ import boto.ses
 # dkim isn't required, but we'll use it if we have it.
 try:
     import dkim
+
     HAS_DKIM = True
 except ImportError:
     HAS_DKIM = False
@@ -35,7 +36,7 @@ def get_boto_ses_connection():
     region_name = getattr(
         settings, 'CUCUMBER_SES_REGION_NAME',
         getattr(settings, 'AWS_SES_REGION_NAME', None))
-    
+
     if region_name != None:
         return boto.ses.connect_to_region(
             region_name,
@@ -47,7 +48,6 @@ def get_boto_ses_connection():
             aws_access_key_id=access_key_id,
             aws_secret_access_key=access_key,
         )
-        
 
 
 def dkim_sign(message):
